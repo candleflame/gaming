@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Room</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.1.3/js/bootstrap.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.3.1/jquery.slim.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/popper.js/1.14.3/esm/popper.min.js"></script>
+    <style>
+        html,
+        body {
+            height: 100%;
+        }
+
+        #chat-container {
+            height: 90%;
+            overflow-y: scroll;
+            padding-top: 5%;
+            padding-bottom: 15%;
+        }
+
+        .message-container {
+            margin-bottom: 10px;
+        }
+
+        .message-timestamp {
+            font-size: small;
+        }
+
+        .message-content {
+            display: inline-block;
+            max-width: 80%;
+            word-wrap: break-word;
+            background-color: #f2f2f2;
+            border-radius: 5px;
+            padding: 10px;
+            margin-left: 10px;
+        }
+
+        #input-container {
+            height: 10%;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            position: fixed;
+            bottom: 0;
+            background-color: white;
+            z-index: 1;
+        }
+
+        #input-container input {
+            padding-left: 10px;
+            padding-right: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <script>
+        // 创建 WebSocket 对象
+        var socket;
+
+        function connectWebSocket() {
+            socket = new WebSocket("ws://xxx:8080/ws");
+
+            // 当 WebSocket 打开连接时执行的函数
+            socket.onopen = function (event) {
+                console.log("WebSocket opened");
+                startHeartbeat();
+            };
+
+            // 当收到消息时执行的函数
+            socket.onmessage = function (event) {
+                const msg = event.data;
+                if (msg!=="pong"){
+                    addMessage( "系统: " + msg)
+                }
+            };
+
+            // 当 WebSocket 关闭连接时执行的函数
+            socket.onclose = function (event) {
+                console.log("WebSocket closed");
+                location.reload()
+            };
+
+            // 当发生错误时执行的函数
+            socket.onerror = function (error) {
+                console.error(`WebSocket error: ${error}`);
+            };
+        }
+        connectWebSocket();
+
+        function startHeartbeat() {
+            setInterval(function () {
+                socket.send("ping");
+            }, 1000); // 每 1 秒发送一次心跳包
+        }
+
+        function showChat() {
+            const register = document.getElementById("register");
+            const chat = document.getElementById("chat");
+
+            register.style.display = "none";
+            chat.style.display = "block";
+        }
+
+        // 发送消息
+        function createRoom() {
+            const roomName = document.getElementById("create-room-name").value;
+            const nickname = document.getElementById("create-nickname").value;
+            const playernum = parseInt(document.getElementById("create-player-num").value);
+            const gametype = parseInt(document.getElementById("create-game-type").value);
+            const info = { num: playernum, alias: nickname }
+            const request = { game: gametype, room: roomName, action: 1, info: JSON.stringify(info) };
+            console.log(JSON.stringify(request))
+            socket.send(JSON.stringify(request));
+            showChat()
+        }
+
+        // 发送消息
+        function joinRoom() {
+            const roomName = document.getElementById("join-room-name").value;
+            const nickname = document.getElementById("join-nickname").value;
+            const gametype = parseInt(document.getElementById("join-game-type").value);
+            const info = { alias: nickname }
+            const request = { game: gametype, room: roomName, action: 2, info: JSON.stringify(info) };
+            console.log(JSON.stringify(request))
+            socket.send(JSON.stringify(request));
+            showChat()
+        }
+
+        function addMessage(msg) {
+            const messagelist = document.getElementById("messagelist")
+
+            const messageContainer = document.createElement("div");
+            messageContainer.setAttribute("class", "message-container");
+
+            const messageTimestamp = document.createElement("div");
+            messageTimestamp.setAttribute("class", "message-timestamp");
+            messageTimestamp.textContent = getTime();
+
+            const messageContent = document.createElement("div");
+            messageContent.setAttribute("class", "message-content");
+            messageContent.textContent = msg;
+
+            messageContainer.appendChild(messageTimestamp);
+            messageContainer.appendChild(messageContent);
+
+            messagelist.appendChild(messageContainer)
+        }
+
+        function getTime() {
+            const now = new Date(); // 创建一个 Date 对象，表示当前时间
+            const year = now.getFullYear(); // 获取当前年份
+            const month = now.getMonth() + 1; // 获取当前月份，需要加 1
+            const day = now.getDate(); // 获取当前日期
+            const hour = now.getHours(); // 获取当前小时
+            const minute = now.getMinutes(); // 获取当前分钟
+            const second = now.getSeconds(); // 获取当前秒数
+
+            const formattedTime = `${year}-${month.toString().padStart(2, "0")}-${day.toString().padStart(2, "0")} ${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}:${second.toString().padStart(2, "0")}`;
+            return formattedTime;
+        }
+
+        function testsendMessage(){
+            const messageinput = document.getElementById("message-input");
+            addMessage(messageinput.value)
+            messageinput.value = ""
+
+        }
+    </script>
+
+    <div id="register" class="container">
+        <div class="row">
+            <!-- 加入房间 -->
+            <div class="col-sm-6">
+                <h2>加入房间</h2>
+                <div class="form-group">
+                    <label for="game-type">游戏类型:</label>
+                    <select class="form-control" id="join-game-type">
+                        <option value="1">Avalon</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="room-name">房间名称:</label>
+                    <input type="text" class="form-control" id="join-room-name" placeholder="请输入房间名称">
+                </div>
+                <div class="form-group">
+                    <label for="nickname">昵称:</label>
+                    <input type="text" class="form-control" id="join-nickname" placeholder="请输入昵称">
+                </div>
+                <button type="submit" class="btn btn-primary" onclick="joinRoom()">加入</button>
+            </div>
+            <!-- 创建房间 -->
+            <div class="col-sm-6">
+                <h2>创建房间</h2>
+                <div class="form-group">
+                    <label for="game-type">游戏类型:</label>
+                    <select class="form-control" id="create-game-type">
+                        <option value="1">Avalon</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="room-name">房间名称:</label>
+                    <input type="text" class="form-control" id="create-room-name" placeholder="请输入房间名称">
+                </div>
+                <div class="form-group">
+                    <label for="nickname">昵称:</label>
+                    <input type="text" class="form-control" id="create-nickname" placeholder="请输入昵称">
+                </div>
+                <div class="form-group">
+                    <label for="players">人数:</label>
+                    <input type="number" class="form-control" id="create-player-num" placeholder="请输入人数">
+                </div>
+                <button class="btn btn-primary" onclick="createRoom()">创建</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="chat" style="display: none;" class="container-fluid">
+        <!-- 聊天界面 -->
+        <div id="chat-container" class="row">
+            <div class="col" id="messagelist">
+            </div>
+        </div>
+        <!-- 消息输入框 -->
+        <div id="input-container" class="row">
+            <div class="col-9">
+                <input type="text" class="form-control" id="message-input" placeholder="请输入消息...">
+            </div>
+            <div class="col">
+                <button type="submit" class="btn btn-primary btn-block" onclick="testsendMessage()">发送</button>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
