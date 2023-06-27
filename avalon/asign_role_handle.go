@@ -62,10 +62,14 @@ func sendRoleDescription(gameInfo *GameInfo) {
 	}
 	boardMsg := fmt.Sprintf("所有玩家已就绪,玩家顺序为: %v", strings.Join(playerList, ";"))
 	gameInfo.playerOrders = playerList
+	labelMsg := fmt.Sprintf("labels:%v", strings.Join(playerList, ";"))
 
 	for addr, alias := range rolesMap {
 		gameInfo.messageHistory[alias] = append(gameInfo.messageHistory[alias], boardMsg)
 		common.SendMessage(addr, boardMsg)
+
+		gameInfo.messageHistory[alias] = append(gameInfo.messageHistory[alias], labelMsg)
+		common.SendMessage(addr, labelMsg)
 
 		role := gameInfo.playerRoles[alias]
 		msg := ""

@@ -27,7 +27,7 @@ func (n NotifyLeaderHandler) Handle(playerAddr string, message *common.ClientMes
 		gameInfo.messageHistory[alias] = append(gameInfo.messageHistory[alias], boardMsg)
 		common.SendMessage(addr, boardMsg)
 		if alias == gameInfo.playerOrders[gameInfo.currentLeader] {
-			common.SendMessage(addr, "点击角色按钮，即为选择成为队友")
+			common.SendMessage(addr, fmt.Sprintf("你是任务队长，输入`选择`，然后点击角色按钮，即为选择成为队友。人数满足 %v 后，点击发送即可完成组队", RoleConfig[gameInfo.playerNum].TaskGroups[len(gameInfo.taskResult)].TotalNum))
 		}
 	}
 

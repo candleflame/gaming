@@ -19,7 +19,7 @@
             height: 90%;
             overflow-y: scroll;
             padding-top: 5%;
-            padding-bottom: 15%;
+            padding-bottom: 30%;
         }
 
         .message-container {
@@ -41,7 +41,7 @@
         }
 
         #input-container {
-            height: 10%;
+            height: 15%;
             width: 100%;
             display: flex;
             align-items: center;
@@ -55,6 +55,21 @@
             padding-left: 10px;
             padding-right: 10px;
         }
+
+        .btn-container {
+            overflow-x: auto;
+            white-space: nowrap;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .btn-container::-webkit-scrollbar {
+            display: none;
+        }
+        .input-button {
+            margin-left: 5px;
+            margin-right: 5px;
+        }
     </style>
 </head>
 
@@ -62,9 +77,11 @@
     <script>
         // 创建 WebSocket 对象
         var socket;
+        var currentGameType;
+        var currentRoom;
 
         function connectWebSocket() {
-            socket = new WebSocket("ws://xxx:8080/ws");
+            socket = new WebSocket("ws://xxx/ws");
 
             // 当 WebSocket 打开连接时执行的函数
             socket.onopen = function (event) {
@@ -75,9 +92,15 @@
             // 当收到消息时执行的函数
             socket.onmessage = function (event) {
                 const msg = event.data;
-                if (msg!=="pong"){
-                    addMessage( "系统: " + msg)
+                if (msg == "pong") {
+                    return
                 }
+                if (msg.startsWith("labels:")) {
+                    addLabels(msg)
+                    return
+                }
+                addMessage("系统: " + msg)
+
             };
 
             // 当 WebSocket 关闭连接时执行的函数
@@ -117,6 +140,8 @@
             const request = { game: gametype, room: roomName, action: 1, info: JSON.stringify(info) };
             console.log(JSON.stringify(request))
             socket.send(JSON.stringify(request));
+            currentGameType = gametype;
+            currentRoom = roomName;
             showChat()
         }
 
@@ -129,7 +154,9 @@
             const request = { game: gametype, room: roomName, action: 2, info: JSON.stringify(info) };
             console.log(JSON.stringify(request))
             socket.send(JSON.stringify(request));
-            showChat()
+            currentGameType = gametype;
+            currentRoom = roomName;
+            showChat();
         }
 
         function addMessage(msg) {
@@ -149,7 +176,27 @@
             messageContainer.appendChild(messageTimestamp);
             messageContainer.appendChild(messageContent);
 
-            messagelist.appendChild(messageContainer)
+            messagelist.appendChild(messageContainer);
+        }
+
+        function addLabels(msg) {
+            const tags = msg.substring("labels:".length).split(";");
+            const labelList = document.getElementById("label-list");
+            while (labelList.firstChild) {
+                labelList.removeChild(labelList.firstChild);
+            }
+            tags.forEach(element => {
+                const button = document.createElement("button");
+                button.type = "button";
+                button.classList.add("btn", "btn-primary", "me-2", "input-button");
+                button.textContent = element;
+                button.onclick = function () {
+                    clickLabel(button);
+                };
+                labelList.appendChild(button)
+
+            });
+
         }
 
         function getTime() {
@@ -165,11 +212,18 @@
             return formattedTime;
         }
 
-        function testsendMessage(){
+        function sendMessage() {
             const messageinput = document.getElementById("message-input");
-            addMessage(messageinput.value)
-            messageinput.value = ""
+            const info = { input: messageinput.value }
+            const request = { game: currentGameType, room: currentRoom, action: 3, info: JSON.stringify(info) };
+            socket.send(JSON.stringify(request));
+            addMessage("我:" + messageinput.value);
+            messageinput.value = "";
+        }
 
+        function clickLabel(btn) {
+            const messageinput = document.getElementById("message-input");
+            messageinput.value += "{{" + btn.textContent + "}}";
         }
     </script>
 
@@ -228,11 +282,14 @@
         </div>
         <!-- 消息输入框 -->
         <div id="input-container" class="row">
+            <!-- 按钮 -->
+            <div class="btn-container mb-1" id="label-list">
+            </div>
             <div class="col-9">
                 <input type="text" class="form-control" id="message-input" placeholder="请输入消息...">
             </div>
             <div class="col">
-                <button type="submit" class="btn btn-primary btn-block" onclick="testsendMessage()">发送</button>
+                <button type="submit" class="btn btn-primary btn-block" onclick="sendMessage()">发送</button>
             </div>
         </div>
     </div>

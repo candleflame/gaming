@@ -12,9 +12,6 @@ import (
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
-	CheckOrigin: func(r *http.Request) bool {
-		return true
-	},
 }
 
 func wsHandler(w http.ResponseWriter, r *http.Request) {
@@ -55,6 +52,7 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	http.Handle("/", http.FileServer(http.Dir("./html")))
 	http.HandleFunc("/ws", wsHandler)
 
 	err := http.ListenAndServe(":8080", nil)

@@ -36,6 +36,7 @@ var actionHandlers = map[Action]ActionHandler{
 	ACTION_ASSIGN_ROLE:   &AssignRolesHandler{},
 	ACTION_NOTIFY_LEADER: &NotifyLeaderHandler{},
 	ACTION_SHOW_HISTORY:  &ShowHistoryHandler{},
+	ACTION_SELECT_GROUP:  &SelectPeopleHandler{},
 }
 
 var AvalonHandler = &GameHandler{}
