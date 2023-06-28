@@ -9,25 +9,28 @@ const (
 	ACTION_INPUT       Action = 3
 
 	// action inner
-	ACTION_ASSIGN_ROLE    Action = 4
-	ACTION_NOTIFY_LEADER  Action = 5
-	ACTION_SHOW_HISTORY   Action = 6
-	ACTION_SELECT_GROUP   Action = 7
-	ACTION_VOTE_FOR_GROUP Action = 8
-	ACTION_VOTE_FOR_TASK  Action = 9
+	ACTION_ASSIGN_ROLE   Action = 4
+	ACTION_NOTIFY_LEADER Action = 5
+	ACTION_SHOW_HISTORY  Action = 6
+	ACTION_SELECT_GROUP  Action = 7
+	ACTION_VOTE          Action = 8
+	ACTION_NOTIFY_TASK   Action = 9
+	ACTION_JUDGE_RESULT  Action = 10
 )
 
 type Stage int
 
 const (
-	STAGE_WAITING          Stage = 0
-	STAGE_SEND_ROLES       Stage = 1
-	STAGE_NOTIFY_LEADER    Stage = 2
-	STAGE_SELECT_PEOPLE    Stage = 3
-	STAGE_VOTE_FOR_GROUP   Stage = 4
-	STAGE_TASK             Stage = 5
-	STAGE_SHOW_TASK_RESULT Stage = 6
-	STAGE_END              Stage = 7
+	STAGE_WAITING        Stage = 0
+	STAGE_SEND_ROLES     Stage = 1
+	STAGE_NOTIFY_LEADER  Stage = 2
+	STAGE_SELECT_PEOPLE  Stage = 3
+	STAGE_VOTE_FOR_GROUP Stage = 4
+	STAGE_NOTIFY_TASK    Stage = 5
+	STAGE_VOTE_FOR_TASK  Stage = 6
+	STAGE_JUDGE_RESULT   Stage = 7
+	STAGE_END            Stage = 8
+	STAGE_KILL_MERLIN    Stage = 9
 )
 
 type Role int

@@ -37,6 +37,9 @@ var actionHandlers = map[Action]ActionHandler{
 	ACTION_NOTIFY_LEADER: &NotifyLeaderHandler{},
 	ACTION_SHOW_HISTORY:  &ShowHistoryHandler{},
 	ACTION_SELECT_GROUP:  &SelectPeopleHandler{},
+	ACTION_VOTE:          &VoteHandler{},
+	ACTION_NOTIFY_TASK:   &NotifyTaskHandler{},
+	ACTION_JUDGE_RESULT:  &JudgeResultHandler{},
 }
 
 var AvalonHandler = &GameHandler{}

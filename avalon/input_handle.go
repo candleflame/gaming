@@ -13,10 +13,11 @@ type InputType int
 const (
 	HISTORY_QUERY InputType = 1
 	SELECT_GROUP  InputType = 2
+	VOTE          InputType = 3
 	DEFAULT_QUERY InputType = -1
 )
 
-var inputParseArr = []InputType{HISTORY_QUERY, SELECT_GROUP, DEFAULT_QUERY}
+var inputParseArr = []InputType{HISTORY_QUERY, SELECT_GROUP, VOTE, DEFAULT_QUERY}
 
 type InputTypeHandle struct {
 	Reg    *regexp.Regexp
@@ -26,6 +27,7 @@ type InputTypeHandle struct {
 var inputTypeHandleMap = map[InputType]InputTypeHandle{
 	HISTORY_QUERY: {Reg: regexp.MustCompile("^历史$"), Handle: HistoryQueryHandle},
 	SELECT_GROUP:  {Reg: regexp.MustCompile("^选择.*"), Handle: SelectGroupHandle},
+	VOTE:          {Reg: regexp.MustCompile(`^(赞成|反对)$`), Handle: VoteHandle},
 	DEFAULT_QUERY: {Reg: regexp.MustCompile(".*"), Handle: DefaultHandle},
 }
 
@@ -71,6 +73,10 @@ func HistoryQueryHandle(playerAddr string, gameInfo *GameInfo, message *common.C
 
 func SelectGroupHandle(playerAddr string, gameInfo *GameInfo, message *common.ClientMessage) (string, error) {
 	return AvalonHandler.Handle(playerAddr, &common.ClientMessage{Game: message.Game, Room: message.Room, Action: int(ACTION_SELECT_GROUP), Info: message.Info})
+}
+
+func VoteHandle(playerAddr string, gameInfo *GameInfo, message *common.ClientMessage) (string, error) {
+	return AvalonHandler.Handle(playerAddr, &common.ClientMessage{Game: message.Game, Room: message.Room, Action: int(ACTION_VOTE), Info: message.Info})
 }
 
 func DefaultHandle(playerAddr string, gameInfo *GameInfo, message *common.ClientMessage) (string, error) {

@@ -57,6 +57,8 @@ func (h SelectPeopleHandler) Handle(playerAddr string, message *common.ClientMes
 			common.SendMessage(addr, voteMsg)
 		}
 
+		gameInfo.selectedPlayer = roleList
+		gameInfo.vote = make(map[string]bool)
 		gameInfo.gameState = STAGE_VOTE_FOR_GROUP
 	} else {
 		common.SendMessage(playerAddr, "选择小队人数不够，请重新选择。")
